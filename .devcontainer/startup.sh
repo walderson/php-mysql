@@ -19,7 +19,7 @@ fi
 # Verificar se PHP está rodando
 if ! pgrep -f "php -S localhost:8080" > /dev/null; then
     echo "Iniciando servidor PHP..."
-    cd /workspaces/PHP
+    cd /workspaces/php-mysql
     nohup /usr/bin/php -S localhost:8080 -t ./ > /tmp/php.log 2>&1 &
     sleep 1
     echo "Servidor PHP iniciado"

@@ -15,12 +15,12 @@ sudo apt install -y mariadb-server php php-pdo php-mysql
 
 # Configurar diretório de dados do MariaDB
 echo "Configurando diretório de dados do MariaDB..."
-sudo mkdir -p /workspaces/PHP/.data
-sudo chown mysql:mysql /workspaces/PHP/.data
+sudo mkdir -p /workspaces/php-mysql/.data
+sudo chown mysql:mysql /workspaces/php-mysql-mysql/.data
 
 # Configurar MariaDB para usar diretório personalizado
 echo "Configurando MariaDB..."
-sudo sed -i 's|datadir.*=.*|datadir = /workspaces/PHP/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
+sudo sed -i 's|datadir.*=.*|datadir = /workspaces/php-mysql/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Iniciar MariaDB para configuração
 echo "Iniciando MariaDB para configuração..."
@@ -39,11 +39,11 @@ sudo mysql -e "ALTER USER 'appuser'@'127.0.0.1' IDENTIFIED VIA mysql_native_pass
 sudo mysql -e "ALTER USER 'appuser'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('app_pass');"
 
 # Importar dados da SQL se o arquivo existir
-if [ -f /workspaces/PHP/database/appdb.sql ]; then
-    echo "Importando /workspaces/PHP/database/appdb.sql..."
-    sudo mysql appdb < /workspaces/PHP/database/appdb.sql
+if [ -f /workspaces/php-mysql/database/appdb.sql ]; then
+    echo "Importando /workspaces/php-mysql/database/appdb.sql..."
+    sudo mysql appdb < /workspaces/php-mysql/database/appdb.sql
 else
-    echo "Arquivo /workspaces/PHP/database/appdb.sql não encontrado. Pulando import";
+    echo "Arquivo /workspaces/php-mysql/database/appdb.sql não encontrado. Pulando import";
 fi
 
 # Definindo permissões para o usuário

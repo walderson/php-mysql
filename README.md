@@ -50,12 +50,12 @@ sudo apt install -y mariadb-server php php-pdo php-mysql
 
 # Configurar diretório de dados do MariaDB
 echo "Configurando diretório de dados do MariaDB..."
-sudo mkdir -p /workspaces/PHP/.data
-sudo chown mysql:mysql /workspaces/PHP/.data
+sudo mkdir -p /workspaces/php-mysql/.data
+sudo chown mysql:mysql /workspaces/php-mysql/.data
 
 # Configurar MariaDB para usar diretório personalizado
 echo "Configurando MariaDB..."
-sudo sed -i 's|datadir.*=.*|datadir = /workspaces/PHP/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
+sudo sed -i 's|datadir.*=.*|datadir = /workspaces/php-mysql/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Iniciar MariaDB para configuração
 echo "Iniciando MariaDB para configuração..."
@@ -78,11 +78,11 @@ sudo mysql -e "GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
 # Importar dados da SQL se o arquivo existir
-if [ -f /workspaces/PHP/database/appdb.sql ]; then
-    echo "Importando /workspaces/PHP/database/appdb.sql..."
-    sudo mysql appdb < /workspaces/PHP/database/appdb.sql
+if [ -f /workspaces/php-mysql/database/appdb.sql ]; then
+    echo "Importando /workspaces/php-mysql/database/appdb.sql..."
+    sudo mysql appdb < /workspaces/php-mysql/database/appdb.sql
 else
-    echo "Arquivo /workspaces/PHP/database/appdb.sql não encontrado. Pulando import";
+    echo "Arquivo /workspaces/php-mysql/database/appdb.sql não encontrado. Pulando import";
 fi
 
 # Parar MariaDB (será reiniciado pelo startup.sh)
@@ -121,7 +121,7 @@ fi
 # Verificar se PHP está rodando
 if ! pgrep -f "php -S localhost:8080" > /dev/null; then
     echo "Iniciando servidor PHP..."
-    cd /workspaces/PHP
+    cd /workspaces/php-mysql
     nohup /usr/bin/php -S localhost:8080 -t ./ > /tmp/php.log 2>&1 &
     sleep 1
     echo "Servidor PHP iniciado"
@@ -147,10 +147,10 @@ echo "=== Serviços iniciados ==="
 echo "=== Iniciando serviços manualmente ==="
 
 # Dar permissões de execução aos scripts
-chmod +x /workspaces/PHP/.devcontainer/*.sh
+chmod +x /workspaces/php-mysql/.devcontainer/*.sh
 
 # Executar script de inicialização
-bash /workspaces/PHP/.devcontainer/startup.sh
+bash /workspaces/php-mysql/.devcontainer/startup.sh
 
 echo "=== Serviços iniciados manualmente ==="
 echo "Teste: curl http://localhost:8080/index.php"
