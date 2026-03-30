@@ -38,6 +38,9 @@ Este tutorial explica como configurar um projeto PHP simples com MariaDB no GitH
 # Script de configuração inicial do container
 # Executado após a criação do container
 
+# Exportar variáveis de ambiente para os processos filhos
+export CODESPACE_VSCODE_FOLDER=${CODESPACE_VSCODE_FOLDER:-.}
+
 echo "=== Iniciando configuração do container ==="
 
 # Atualizar lista de pacotes
@@ -50,12 +53,12 @@ sudo apt install -y mariadb-server php php-pdo php-mysql
 
 # Configurar diretório de dados do MariaDB
 echo "Configurando diretório de dados do MariaDB..."
-sudo mkdir -p /workspaces/php-mysql/.data
-sudo chown mysql:mysql /workspaces/php-mysql/.data
+sudo mkdir -p $CODESPACE_VSCODE_FOLDER/.data
+sudo chown mysql:mysql $CODESPACE_VSCODE_FOLDER/.data
 
 # Configurar MariaDB para usar diretório personalizado
 echo "Configurando MariaDB..."
-sudo sed -i 's|datadir.*=.*|datadir = /workspaces/php-mysql/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
+sudo sed -i "s|datadir.*=.*|datadir = $CODESPACE_VSCODE_FOLDER/.data|" /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Iniciar MariaDB para configuração
 echo "Iniciando MariaDB para configuração..."
@@ -78,11 +81,11 @@ sudo mysql -e "GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
 # Importar dados da SQL se o arquivo existir
-if [ -f /workspaces/php-mysql/database/appdb.sql ]; then
-    echo "Importando /workspaces/php-mysql/database/appdb.sql..."
-    sudo mysql appdb < /workspaces/php-mysql/database/appdb.sql
+if [ -f $CODESPACE_VSCODE_FOLDER/database/appdb.sql ]; then
+    echo "Importando $CODESPACE_VSCODE_FOLDER/database/appdb.sql..."
+    sudo mysql appdb < $CODESPACE_VSCODE_FOLDER/database/appdb.sql
 else
-    echo "Arquivo /workspaces/php-mysql/database/appdb.sql não encontrado. Pulando import";
+    echo "Arquivo $CODESPACE_VSCODE_FOLDER/database/appdb.sql não encontrado. Pulando import";
 fi
 
 # Parar MariaDB (será reiniciado pelo startup.sh)
@@ -105,6 +108,9 @@ echo "=== Configuração inicial concluída ==="
 # Script para garantir que os serviços estejam sempre rodando
 # Pode ser executado múltiplas vezes sem problemas
 
+# Exportar variáveis de ambiente para os processos filhos
+export CODESPACE_VSCODE_FOLDER=${CODESPACE_VSCODE_FOLDER:-.}
+
 echo "=== Iniciando serviços ==="
 
 # Verificar se MariaDB está rodando
@@ -121,8 +127,8 @@ fi
 # Verificar se PHP está rodando
 if ! pgrep -f "php -S localhost:8080" > /dev/null; then
     echo "Iniciando servidor PHP..."
-    cd /workspaces/php-mysql
-    nohup /usr/bin/php -S localhost:8080 -t ./ > /tmp/php.log 2>&1 &
+    cd "$CODESPACE_VSCODE_FOLDER"
+    nohup env CODESPACE_VSCODE_FOLDER="$CODESPACE_VSCODE_FOLDER" /usr/bin/php -S localhost:8080 -t ./ > /tmp/php.log 2>&1 &
     sleep 1
     echo "Servidor PHP iniciado"
 else
@@ -132,6 +138,8 @@ fi
 echo "=== Serviços iniciados ==="
 ```
 
+- exporta a variável `$CODESPACE_VSCODE_FOLDER` para garantir que o PHP tenha acesso aos caminhos corretos.
+- passa a variável explicitamente ao processo PHP com `env CODESPACE_VSCODE_FOLDER`.
 - inicia MariaDB e servidor básico PHP embutido.
 - evita reiniciar se já estiver rodando.
 
@@ -144,13 +152,16 @@ echo "=== Serviços iniciados ==="
 # Execute este script se o postStartCommand não funcionar automaticamente
 # Uso: bash .devcontainer/start-services.sh
 
+# Exportar variáveis de ambiente para os processos filhos
+export CODESPACE_VSCODE_FOLDER=${CODESPACE_VSCODE_FOLDER:-.}
+
 echo "=== Iniciando serviços manualmente ==="
 
 # Dar permissões de execução aos scripts
-chmod +x /workspaces/php-mysql/.devcontainer/*.sh
+chmod +x $CODESPACE_VSCODE_FOLDER/.devcontainer/*.sh
 
 # Executar script de inicialização
-bash /workspaces/php-mysql/.devcontainer/startup.sh
+bash $CODESPACE_VSCODE_FOLDER/.devcontainer/startup.sh
 
 echo "=== Serviços iniciados manualmente ==="
 echo "Teste: curl http://localhost:8080/index.php"

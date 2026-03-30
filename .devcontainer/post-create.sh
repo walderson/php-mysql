@@ -3,6 +3,9 @@
 # Script de configuração inicial do container
 # Executado após a criação do container
 
+# Exportar variáveis de ambiente para os processos filhos
+export CODESPACE_VSCODE_FOLDER=${CODESPACE_VSCODE_FOLDER:-.}
+
 echo "=== Iniciando configuração do container ==="
 
 # Atualizar lista de pacotes
@@ -15,12 +18,12 @@ sudo apt install -y mariadb-server php php-pdo php-mysql
 
 # Configurar diretório de dados do MariaDB
 echo "Configurando diretório de dados do MariaDB..."
-sudo mkdir -p /workspaces/php-mysql/.data
-sudo chown mysql:mysql /workspaces/php-mysql-mysql/.data
+sudo mkdir -p $CODESPACE_VSCODE_FOLDER/.data
+sudo chown mysql:mysql $CODESPACE_VSCODE_FOLDER/.data
 
 # Configurar MariaDB para usar diretório personalizado
 echo "Configurando MariaDB..."
-sudo sed -i 's|datadir.*=.*|datadir = /workspaces/php-mysql/.data|' /etc/mysql/mariadb.conf.d/50-server.cnf
+sudo sed -i "s|datadir.*=.*|datadir = $CODESPACE_VSCODE_FOLDER/.data|" /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Iniciar MariaDB para configuração
 echo "Iniciando MariaDB para configuração..."
@@ -39,11 +42,11 @@ sudo mysql -e "ALTER USER 'appuser'@'127.0.0.1' IDENTIFIED VIA mysql_native_pass
 sudo mysql -e "ALTER USER 'appuser'@'%' IDENTIFIED VIA mysql_native_password USING PASSWORD('app_pass');"
 
 # Importar dados da SQL se o arquivo existir
-if [ -f /workspaces/php-mysql/database/appdb.sql ]; then
-    echo "Importando /workspaces/php-mysql/database/appdb.sql..."
-    sudo mysql appdb < /workspaces/php-mysql/database/appdb.sql
+if [ -f $CODESPACE_VSCODE_FOLDER/database/appdb.sql ]; then
+    echo "Importando $CODESPACE_VSCODE_FOLDER/database/appdb.sql..."
+    sudo mysql appdb < $CODESPACE_VSCODE_FOLDER/database/appdb.sql
 else
-    echo "Arquivo /workspaces/php-mysql/database/appdb.sql não encontrado. Pulando import";
+    echo "Arquivo $CODESPACE_VSCODE_FOLDER/database/appdb.sql não encontrado. Pulando import";
 fi
 
 # Definindo permissões para o usuário
